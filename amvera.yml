@@ -1,10 +1,10 @@
 meta:
-  environment: docker
-  toolchain:
-    name: docker
+  environment: node
 
 build:
-  dockerfile: Dockerfile
+  commands:
+    - npm install
+    - npm run build
 
 run:
-  containerPort: 80
+  command: npx serve -s dist -l 80
