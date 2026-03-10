@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Phone, Clock, MapPin, ChevronRight } from "lucide-react";
+import { Phone, Clock, MapPin, ChevronRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { services, YCLIENTS_URL } from "@/data/services";
+import { YCLIENTS_URL } from "@/data/services";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import teamPhoto from "@/assets/team-photo.jpg";
 
 const fadeUp = {
@@ -16,9 +18,35 @@ const fadeUp = {
   }),
 };
 
-const popularServices = services.filter((s) => ["1", "3", "9", "13", "8"].includes(s.id));
-
 const Index = () => {
+  const { data: popularServices = [] } = useQuery({
+    queryKey: ["popular-services"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order")
+        .limit(6);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["reviews"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("*")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <>
       {/* Hero */}
@@ -166,8 +194,41 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Reviews */}
+      {reviews.length > 0 && (
+        <section className="py-16 md:py-24">
+          <div className="container">
+            <h2 className="section-heading text-center mb-12">Отзывы наших клиентов</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reviews.map((review, i) => (
+                <motion.div
+                  key={review.id}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-30px" }}
+                  variants={fadeUp}
+                  custom={i}
+                >
+                  <Card className="h-full">
+                    <CardContent className="p-6">
+                      <div className="flex gap-1 mb-3">
+                        {Array.from({ length: review.rating }).map((_, idx) => (
+                          <Star key={idx} className="w-4 h-4 fill-primary text-primary" />
+                        ))}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4 italic">«{review.content}»</p>
+                      <p className="font-heading font-semibold text-sm">{review.author_name}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* FAQ */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container max-w-3xl">
           <h2 className="section-heading text-center mb-12">Часто задаваемые вопросы</h2>
           <Accordion type="single" collapsible className="w-full">
