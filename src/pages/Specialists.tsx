@@ -2,7 +2,10 @@ import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { specialists, YCLIENTS_URL } from "@/data/services";
+import { YCLIENTS_URL } from "@/data/services";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { specialists as fallbackSpecialists } from "@/data/services";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -14,6 +17,23 @@ const fadeUp = {
 };
 
 const Specialists = () => {
+  const { data: dbSpecialists } = useQuery({
+    queryKey: ["specialists"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("specialists")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const specs = dbSpecialists && dbSpecialists.length > 0
+    ? dbSpecialists.map(s => ({ id: s.id, name: s.name, role: s.role, description: s.description || "", photo_url: s.photo_url }))
+    : fallbackSpecialists.map(s => ({ ...s, photo_url: null as string | null }));
+
   return (
     <section className="py-16 md:py-24">
       <div className="container">
@@ -23,7 +43,7 @@ const Specialists = () => {
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {specialists.map((spec, i) => (
+          {specs.map((spec, i) => (
             <motion.div
               key={spec.id}
               initial="hidden"
@@ -33,9 +53,12 @@ const Specialists = () => {
               custom={i}
             >
               <Card className="h-full hover:shadow-lg transition-shadow group overflow-hidden">
-                {/* Photo placeholder */}
-                <div className="aspect-square bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
-                  <User className="w-20 h-20 text-primary/30" />
+                <div className="aspect-square bg-gradient-to-br from-accent to-secondary flex items-center justify-center overflow-hidden">
+                  {spec.photo_url ? (
+                    <img src={spec.photo_url} alt={`Фото ${spec.name}, специалист KASAEMO`} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-20 h-20 text-primary/30" />
+                  )}
                 </div>
                 <CardContent className="p-5">
                   <h3 className="font-heading font-bold text-lg mb-1 group-hover:text-primary transition-colors">

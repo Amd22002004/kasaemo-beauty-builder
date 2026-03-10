@@ -10,6 +10,8 @@ import Specialists from "./pages/Specialists";
 import Courses from "./pages/Courses";
 import Certificates from "./pages/Certificates";
 import Contacts from "./pages/Contacts";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/kursy" element={<Courses />} />
             <Route path="/sertifikaty" element={<Certificates />} />
             <Route path="/kontakty" element={<Contacts />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

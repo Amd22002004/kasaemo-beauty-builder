@@ -2,7 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { services, categoryLabels, YCLIENTS_URL, type ServiceCategory } from "@/data/services";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { services as fallbackServices, categoryLabels, YCLIENTS_URL, type ServiceCategory } from "@/data/services";
 
 const categories: (ServiceCategory | "all")[] = ["all", "face", "body", "courses", "certificates"];
 const allLabel = "Все";
@@ -19,6 +21,23 @@ const fadeUp = {
 const Services = () => {
   const [filter, setFilter] = useState<ServiceCategory | "all">("all");
 
+  const { data: dbServices } = useQuery({
+    queryKey: ["services"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const services = dbServices && dbServices.length > 0
+    ? dbServices.map(s => ({ id: s.id, name: s.name, price: s.price, category: s.category as ServiceCategory, description: s.description || "" }))
+    : fallbackServices;
+
   const filtered = filter === "all" ? services : services.filter((s) => s.category === filter);
 
   return (
@@ -29,7 +48,6 @@ const Services = () => {
           Полный список услуг студии KASAEMO. Выберите категорию для фильтрации.
         </p>
 
-        {/* Filters */}
         <div className="flex flex-wrap justify-center gap-2 mb-10">
           {categories.map((cat) => (
             <Button
@@ -43,7 +61,6 @@ const Services = () => {
           ))}
         </div>
 
-        {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((service, i) => (
             <motion.div

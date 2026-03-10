@@ -6,20 +6,28 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contacts = () => {
   const { toast } = useToast();
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSending(true);
-    // Placeholder — будет подключено к Supabase позже
-    setTimeout(() => {
-      setSending(false);
+    const formData = new FormData(e.currentTarget);
+    const { error } = await supabase.from("feedback").insert({
+      name: formData.get("name") as string,
+      phone: formData.get("phone") as string,
+      message: (formData.get("message") as string) || null,
+    });
+    setSending(false);
+    if (error) {
+      toast({ title: "Ошибка", description: "Не удалось отправить сообщение. Попробуйте позже.", variant: "destructive" });
+    } else {
       toast({ title: "Сообщение отправлено", description: "Мы свяжемся с вами в ближайшее время!" });
       (e.target as HTMLFormElement).reset();
-    }, 800);
+    }
   };
 
   return (
@@ -75,8 +83,7 @@ const Contacts = () => {
               Мы ВКонтакте →
             </a>
 
-            {/* Map placeholder */}
-            <div className="mt-8 rounded-xl overflow-hidden border h-64 bg-muted flex items-center justify-center">
+            <div className="mt-8 rounded-xl overflow-hidden border h-64">
               <iframe
                 title="Карта KASAEMO"
                 width="100%"
