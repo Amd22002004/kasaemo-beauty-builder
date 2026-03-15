@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { YCLIENTS_URL } from "@/data/services";
+import logo from "@/assets/logo.png";
 
 const navLinks = [
   { to: "/", label: "Главная" },
