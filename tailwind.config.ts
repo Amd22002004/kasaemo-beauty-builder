@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
+        logo: ["Cormorant Garamond", "serif"],
         heading: ["Montserrat", "sans-serif"],
         body: ["Open Sans", "sans-serif"],
       },
