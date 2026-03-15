@@ -21,8 +21,8 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b shadow-sm">
       <div className="container flex items-center justify-between h-16 md:h-20">
-        <Link to="/" className="font-heading font-black text-2xl md:text-3xl tracking-tight text-primary">
-          KASAEMO
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logo} alt="KASAEMO" className="h-10 md:h-12 w-auto" />
         </Link>
 
         {/* Desktop nav */}
